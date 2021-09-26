@@ -75,7 +75,11 @@ export class Scanner {
                 this.addToken(TokenType.SEMICOLON);
                 break;
             case '*':
-                this.addToken(TokenType.STAR);
+                if (this.match('/')) {
+                    // comment block closed
+                } else {
+                    this.addToken(TokenType.STAR);
+                }
                 break;
             case '!':
                 this.addToken(this.match('=') ? TokenType.BANG_EQUAL : TokenType.BANG);
@@ -95,6 +99,13 @@ export class Scanner {
                     // (at least until we want to treat comments differently)
                     while (this.peek() !== '\n' && !this.isAtEnd()) {
                         this.advance();
+                    }
+                } else if (this.match('*')) {
+                    // handle block style comments à la C by peeking until spotting the
+                    // closing comment symbols, handle them through the scanner
+                    while (this.peek() !== '*' && this.peek(2) !== '/' && !this.isAtEnd()) {
+                        const char = this.advance();
+                        if (char === '\n') this.line += 1;
                     }
                 } else {
                     this.addToken(TokenType.SLASH);
